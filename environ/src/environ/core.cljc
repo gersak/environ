@@ -77,18 +77,15 @@
               (read-system-env))
              {})))
 
-(defonce ^{:doc "A map of environment variables."}
+(defonce ^{:doc "A map of environment variables."
+           :dynamic true}
   env (read-env))
 
 
-#?(:clj (defonce ^:dynamic *env* nil))
-
 #?(:clj
-   (defn read-env-runtime
+   (defn read-runtime-env
      "Native image compilation won't work for environ.core/env
      as it is compiled with current environment and not runtime environment
-     variables. Therefore use *env* and this function to initialize
-     environment at runtime."
+     variables."
      []
-     (let [env (read-env)]
-       (alter-var-root #'*env* (fn [_] env)))))
+     (alter-var-root #'env (fn [_] (read-env)))))
