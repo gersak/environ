@@ -19,15 +19,19 @@
       (str/replace "." "-")
       (keyword)))
 
+(defn- -println [& args]
+  #_(:clj (.println System/err (apply str args))
+          :cljs (.error js/console (apply str args))))
+
 (defn- sanitize-key [k]
   (let [s (keywordize (name k))]
-    (if-not (= k s) (println "Warning: environ key" k "has been corrected to" s))
+    (if-not (= k s) (-println "Warning: environ key" k "has been corrected to" s))
     s))
 
 (defn- sanitize-val [k v]
   (if (string? v)
     v
-    (do (println "Warning: environ value" (pr-str v) "for key" k "has been cast to string")
+    (do (-println "Warning: environ value" (pr-str v) "for key" k "has been cast to string")
         (str v))))
 
 (defn- read-system-env []
@@ -58,8 +62,8 @@
   (doseq [[k kvs] (group-by key (apply concat ms))
           :let  [vs (map val kvs)]
           :when (and (next kvs) (not= (first vs) (last vs)))]
-    (println "Warning: environ value" (first vs) "for key" k
-             "has been overwritten with" (last vs))))
+    (-println "Warning: environ value" (first vs) "for key" k
+              "has been overwritten with" (last vs))))
 
 (defn- merge-env [& ms]
   (warn-on-overwrite ms)
@@ -80,7 +84,6 @@
 (defonce ^{:doc "A map of environment variables."
            :dynamic true}
   env (read-env))
-
 
 #?(:clj
    (defn read-runtime-env
